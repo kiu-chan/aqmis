@@ -32,7 +32,7 @@ const AirQualityChart = () => {
   return (
     <div className="charts-container">
       <h2>Biểu đồ chất lượng không khí</h2>
-      <div className="charts-grid">
+      <div className="charts-list">
         <ChartCard title="Nồng độ PM2.5" dataKey="pm25" unit="µg/m³" color="#8884d8" />
         <ChartCard title="Nồng độ PM10" dataKey="pm10" unit="µg/m³" color="#82ca9d" />
         <ChartCard title="Nồng độ SO2" dataKey="so2" unit="ppb" color="#ffc658" />

@@ -2,6 +2,7 @@ import React from 'react';
 import TopNavBar from './TopNavBar';
 import AirQualityMap from './AirQualityMap';
 import AirQualityChart from './AirQualityChart';
+import AirQualityThresholdsTable from './AirQualityThresholdsTable';
 
 function Home() {
     return (
@@ -13,6 +14,7 @@ function Home() {
                 </h1>
                 <AirQualityMap />
                 <AirQualityChart />
+                <AirQualityThresholdsTable />
             </main>
         </div>
     )
