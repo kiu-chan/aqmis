@@ -7,8 +7,11 @@
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
     "axios": "^1.7.7",
+    "cors": "^2.8.5",
+    "express": "^4.21.1",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.453.0",
+    "pg": "^8.13.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-leaflet": "^4.2.1",
@@ -45,5 +48,10 @@
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
     "sass": "^1.79.5",
     "sass-loader": "^16.0.2"
-  }
+  },
+  "description": "This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).",
+  "main": "index.js",
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
 }

@@ -40,7 +40,17 @@
   margin-top: 0.5rem;
 }
 
-@media screen and (max-width: 768px) {
+.loading, .error {
+  text-align: center;
+  font-size: 1.2rem;
+  margin-top: 2rem;
+}
+
+.error {
+  color: #e74c3c;
+}
+
+@media (max-width: 768px) {
   .charts-container {
     padding: 0.5rem;
   }
