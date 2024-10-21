@@ -1,5 +1,5 @@
 import React from 'react';
-import TopNavBar from './TopNavBar';
+import TopNavBar from '../TopNavBar';
 import AirQualityMap from './AirQualityMap';
 import AirQualityChart from './AirQualityChart';
 import AirQualityThresholdsTable from './AirQualityThresholdsTable';

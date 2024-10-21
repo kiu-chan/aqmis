@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const authRoutes = require('./routes/auth');
+const postsRoutes = require('./routes/posts');
 const airQualityRoutes = require('./routes/airQuality');
 
 const app = express();
@@ -14,7 +15,8 @@ app.use(express.json());
 
 // Routes
 app.use('/api/auth', authRoutes);
-app.use('/api/air-quality', airQualityRoutes);  // Đảm bảo route này được kết nối
+app.use('/api/posts', postsRoutes);
+app.use('/api/air-quality', airQualityRoutes);
 
 app.listen(port, () => {
   console.log(`Server đang chạy tại http://localhost:${port}`);
