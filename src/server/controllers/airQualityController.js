@@ -1,39 +1,19 @@
-const express = require('express');
-const { Pool } = require('pg');
-const cors = require('cors');
+const db = require('../db');
 
-const app = express();
-const port = 3001;
-
-app.use(cors({
-  origin: 'http://localhost:3000'
-}));
-
-const pool = new Pool({
-  user: 'postgres',
-  host: '127.0.0.1',
-  database: 'thai_nguyen_air_quality_db',
-  password: '123456',
-  port: 5432,
-});
-
-app.get('/api/air-quality', async (req, res) => {
+exports.getAirQualityData = async (req, res) => {
   try {
-    const client = await pool.connect();
-    const result = await client.query('SELECT * FROM thai_nguyen_air_quality ORDER BY measurement_time DESC LIMIT 24');
-    const data = result.rows;
-    client.release();
-    res.json(data);
+    const result = await db.query('SELECT * FROM thai_nguyen_air_quality ORDER BY measurement_time DESC LIMIT 24');
+    res.json(result.rows);
   } catch (err) {
-    console.error('Lỗi khi truy vấn database:', err);
+    console.error('Lỗi khi truy vấn dữ liệu chất lượng không khí:', err);
     res.status(500).json({ error: 'Lỗi server nội bộ' });
   }
-});
+};
 
-app.get('/api/air-quality-thresholds', async (req, res) => {
+
+exports.getAirQualityThresholds = async (req, res) => {
   try {
-    const client = await pool.connect();
-    const result = await client.query(`
+    const result = await db.query(`
       SELECT 
         parameter,
         MAX(CASE WHEN EXTRACT(EPOCH FROM (NOW() - measurement_time)) <= 7200 THEN value END) as hour_2,
@@ -64,15 +44,9 @@ app.get('/api/air-quality-thresholds', async (req, res) => {
       GROUP BY parameter
       ORDER BY parameter
     `);
-    const data = result.rows;
-    client.release();
-    res.json(data);
+    res.json(result.rows);
   } catch (err) {
-    console.error('Lỗi khi truy vấn database:', err);
+    console.error('Lỗi khi truy vấn ngưỡng chất lượng không khí:', err);
     res.status(500).json({ error: 'Lỗi server nội bộ' });
   }
-});
-
-app.listen(port, () => {
-  console.log(`Server đang chạy tại http://localhost:${port}`);
-});
+};
