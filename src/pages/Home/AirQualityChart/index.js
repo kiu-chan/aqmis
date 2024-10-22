@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import axios from 'axios';
 import './AirQualityChart.css';
 
 const ChartCard = ({ title, dataKey, unit, color, data }) => {
-  // Tìm giá trị tối đa cho dataKey
   const maxValue = Math.max(...data.map(item => parseFloat(item[dataKey]) || 0));
-  
-  // Tính toán giá trị tối đa mới cho trục Y
   const yAxisMax = maxValue * 1.1;
 
   return (
@@ -39,17 +37,14 @@ const AirQualityChart = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const response = await fetch('http://localhost:3001/api/air-quality');
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const jsonData = await response.json();
-        setData(jsonData);
+        const response = await axios.get('http://localhost:3001/api/air-quality');
+        setData(response.data);
         setError(null);
       } catch (e) {
         console.error("Có lỗi khi tải dữ liệu:", e);
@@ -60,19 +55,41 @@ const AirQualityChart = () => {
     };
 
     fetchData();
+
+    // Kiểm tra trạng thái đăng nhập
+    const user = JSON.parse(localStorage.getItem('user'));
+    setIsLoggedIn(!!user);
   }, []);
 
-  if (loading) {
-    return <div className="loading">Đang tải dữ liệu...</div>;
-  }
+  const handleDownload = async () => {
+    try {
+      const response = await axios.get('http://localhost:3001/api/air-quality/download', {
+        responseType: 'blob',
+      });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'du_lieu_chat_luong_khong_khi.csv');
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (error) {
+      console.error("Lỗi khi tải xuống dữ liệu:", error);
+      alert("Không thể tải xuống dữ liệu. Vui lòng thử lại sau.");
+    }
+  };
 
-  if (error) {
-    return <div className="error">{error}</div>;
-  }
+  if (loading) return <div className="loading">Đang tải dữ liệu...</div>;
+  if (error) return <div className="error">{error}</div>;
 
   return (
     <div className="charts-container">
       <h2>Biểu đồ chất lượng không khí</h2>
+      {isLoggedIn && (
+        <button onClick={handleDownload} className="download-button">
+          Tải xuống dữ liệu
+        </button>
+      )}
       <div className="charts-list">
         <ChartCard title="Chỉ số chất lượng không khí (AQI)" dataKey="aqi" unit="" color="#8884d8" data={data} />
         <ChartCard title="Nồng độ CO" dataKey="co" unit="ppm" color="#82ca9d" data={data} />
