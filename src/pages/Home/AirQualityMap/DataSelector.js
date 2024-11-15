@@ -11,7 +11,12 @@ const DataSelector = ({
 }) => {
   const formatDate = (dateString) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('vi-VN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    return date.toLocaleDateString('vi-VN', { 
+      weekday: 'long', 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
   };
 
   return (
@@ -39,7 +44,10 @@ const DataSelector = ({
       {selectedTimeOption === 'forecast' && (
         <>
           <div className="date-selector">
-            <select value={selectedDate} onChange={(e) => onDateChange(e.target.value)}>
+            <select 
+              value={selectedDate} 
+              onChange={(e) => onDateChange(e.target.value)}
+            >
               {availableDates.map((date) => (
                 <option key={date} value={date}>
                   {formatDate(date)}
@@ -48,7 +56,10 @@ const DataSelector = ({
             </select>
           </div>
           <div className="index-selector">
-            <select value={selectedIndexOption} onChange={(e) => onIndexOptionChange(e.target.value)}>
+            <select 
+              value={selectedIndexOption} 
+              onChange={(e) => onIndexOptionChange(e.target.value)}
+            >
               <option value="pm25">PM2.5</option>
               <option value="pm10">PM10</option>
               <option value="o3">O3</option>

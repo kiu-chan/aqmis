@@ -6,7 +6,7 @@ import axios from 'axios';
 import './AirQualityMap.css';
 import DataSelector from './DataSelector';
 
-// Sửa lỗi cho biểu tượng marker mặc định
+// Fix default marker icon issue
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: require('leaflet/dist/images/marker-icon-2x.png'),
@@ -32,7 +32,6 @@ const AirQualityMap = () => {
         );
         setAqiData(response.data.data);
         
-        // Tạo mảng các ngày có sẵn cho dự báo (5 ngày tiếp theo)
         const today = new Date();
         const nextFiveDays = Array.from({length: 5}, (_, i) => {
           const date = new Date(today);
@@ -40,7 +39,7 @@ const AirQualityMap = () => {
           return date.toISOString().split('T')[0];
         });
         setAvailableDates(nextFiveDays);
-        setSelectedDate(nextFiveDays[0]); // Chọn ngày đầu tiên mặc định
+        setSelectedDate(nextFiveDays[0]);
       } catch (error) {
         console.error("Lỗi khi lấy dữ liệu AQI:", error);
       }
@@ -61,6 +60,7 @@ const AirQualityMap = () => {
   }, []);
 
   const getAQIColor = (aqi) => {
+    if (!aqi) return '#999999';
     if (aqi <= 50) return '#00e400';
     if (aqi <= 100) return '#ffff00';
     if (aqi <= 150) return '#ff7e00';
@@ -70,12 +70,78 @@ const AirQualityMap = () => {
   };
 
   const getAQIStatus = (aqi) => {
+    if (!aqi) return 'Không có dữ liệu';
     if (aqi <= 50) return 'Tốt';
     if (aqi <= 100) return 'Trung bình';
     if (aqi <= 150) return 'Kém';
     if (aqi <= 200) return 'Xấu';
     if (aqi <= 300) return 'Rất xấu';
     return 'Nguy hại';
+  };
+
+  const getAQIWarnings = (aqi) => {
+    if (!aqi) return {
+      general: 'Không có dữ liệu đo được.',
+      sensitive: 'Không có dữ liệu đo được.',
+      normal: 'Không có dữ liệu đo được.',
+      outdoor: 'Không có dữ liệu đo được.',
+      icon: '❓',
+      color: '#999999'
+    };
+
+    if (aqi <= 50) return {
+      general: 'Chất lượng không khí tốt.',
+      sensitive: 'Có thể tham gia các hoạt động ngoài trời.',
+      normal: 'Hoàn toàn có thể tham gia các hoạt động ngoài trời.',
+      outdoor: 'Thời điểm lý tưởng để hoạt động ngoài trời.',
+      icon: '✅',
+      color: '#00e400'
+    };
+
+    if (aqi <= 100) return {
+      general: 'Chất lượng không khí ở mức chấp nhận được.',
+      sensitive: 'Nên cân nhắc giảm thời gian hoạt động ngoài trời kéo dài.',
+      normal: 'Có thể tiếp tục các hoạt động ngoài trời bình thường.',
+      outdoor: 'Có thể tiến hành các hoạt động ngoài trời nhưng nên theo dõi các triệu chứng hô hấp.',
+      icon: '⚠️',
+      color: '#ffff00'
+    };
+
+    if (aqi <= 150) return {
+      general: 'Không khí đang ở mức độ không tốt cho sức khỏe đối với nhóm nhạy cảm.',
+      sensitive: 'Nên hạn chế các hoạt động ngoài trời kéo dài. Đeo khẩu trang khi ra ngoài.',
+      normal: 'Cân nhắc giảm thời gian hoạt động ngoài trời.',
+      outdoor: 'Nên rút ngắn thời gian hoạt động ngoài trời và đeo khẩu trang.',
+      icon: '🚧',
+      color: '#ff7e00'
+    };
+
+    if (aqi <= 200) return {
+      general: 'Không khí có hại cho sức khỏe.',
+      sensitive: 'Tránh các hoạt động ngoài trời. Sử dụng khẩu trang và máy lọc không khí.',
+      normal: 'Hạn chế các hoạt động ngoài trời. Đeo khẩu trang khi ra ngoài.',
+      outdoor: 'Không nên tổ chức các hoạt động ngoài trời kéo dài.',
+      icon: '❗',
+      color: '#ff0000'
+    };
+
+    if (aqi <= 300) return {
+      general: 'Không khí rất có hại cho sức khỏe.',
+      sensitive: 'Ở trong nhà và sử dụng máy lọc không khí. Tránh các hoạt động ngoài trời.',
+      normal: 'Hạn chế tối đa các hoạt động ngoài trời. Đeo khẩu trang N95 khi buộc phải ra ngoài.',
+      outdoor: 'Hủy bỏ hoặc dời các hoạt động ngoài trời không cần thiết.',
+      icon: '🔴',
+      color: '#8f3f97'
+    };
+
+    return {
+      general: 'Không khí ở mức nguy hiểm!',
+      sensitive: 'Tuyệt đối không ra ngoài. Sử dụng máy lọc không khí trong nhà.',
+      normal: 'Hạn chế tối đa việc ra ngoài. Đeo khẩu trang N95 nếu buộc phải ra ngoài.',
+      outdoor: 'Hủy bỏ tất cả các hoạt động ngoài trời.',
+      icon: '☠️',
+      color: '#7e0023'
+    };
   };
 
   const formatValue = (value, unit = '') => {
@@ -92,7 +158,6 @@ const AirQualityMap = () => {
       fillOpacity: 0.7
     };
   };
-
   const onEachFeature = (feature, layer) => {
     if (feature.properties && feature.properties.name) {
       layer.bindPopup(feature.properties.name);
@@ -116,6 +181,7 @@ const AirQualityMap = () => {
 
   const getDisplayAQI = () => {
     if (!aqiData) return { avg: null, day: null, max: null, min: null };
+    
     if (selectedTimeOption === 'current') {
       return { 
         avg: aqiData.aqi, 
@@ -148,6 +214,7 @@ const AirQualityMap = () => {
   };
 
   const displayAQI = getDisplayAQI();
+  const warnings = getAQIWarnings(displayAQI.avg);
 
   return (
     <div className="air-quality-container">
@@ -161,8 +228,9 @@ const AirQualityMap = () => {
           onIndexOptionChange={handleIndexOptionChange}
           availableDates={availableDates}
         />
+        
         <div className="aqi-box" style={{ 
-          backgroundColor: getAQIColor(displayAQI.avg),
+          backgroundColor: warnings.color,
           color: displayAQI.avg > 100 ? 'white' : 'black'
         }}>
           <h3>
@@ -190,16 +258,30 @@ const AirQualityMap = () => {
                 <p>
                   <span role="img" aria-label="temperature">🌡️</span> Nhiệt độ: {aqiData ? formatValue(aqiData.iaqi.t?.v, '°C') : 'N/A'}
                 </p>
+                <p>
+                  <span role="img" aria-label="wind">🌪️</span> Gió: {aqiData ? formatValue(aqiData.iaqi.w?.v, 'm/s') : 'N/A'}
+                </p>
               </div>
             )}
           </div>
         </div>
+
         <div className="info-messages">
-          <p><span role="img" aria-label="warning">⚠️</span> Nhóm nhạy cảm có thể chịu những tác động nhất định tới sức khỏe</p>
-          <p><span role="img" aria-label="info">ℹ️</span> Nhóm người bình thường: Tự do thực hiện các hoạt động ngoài trời.</p>
-          <p><span role="img" aria-label="caution">🚸</span> Nhóm người nhạy cảm: Nên theo dõi các triệu chứng như ho hoặc khó thở, nhưng vẫn có thể hoạt động bên ngoài.</p>
+          <p className="warning-message" style={{borderLeftColor: warnings.color}}>
+            <span role="img" aria-label="status">{warnings.icon}</span> {warnings.general}
+          </p>
+          <p className="warning-message" style={{borderLeftColor: warnings.color}}>
+            <span role="img" aria-label="info">ℹ️</span> Nhóm người bình thường: {warnings.normal}
+          </p>
+          <p className="warning-message" style={{borderLeftColor: warnings.color}}>
+            <span role="img" aria-label="warning">⚕️</span> Nhóm người nhạy cảm: {warnings.sensitive}
+          </p>
+          <p className="warning-message" style={{borderLeftColor: warnings.color}}>
+            <span role="img" aria-label="outdoor">🏃</span> Hoạt động ngoài trời: {warnings.outdoor}
+          </p>
         </div>
       </div>
+
       <div className="map-panel">
         <MapContainer center={mapCenter} zoom={zoomLevel} className="map-container">
           <TileLayer
@@ -218,7 +300,7 @@ const AirQualityMap = () => {
               <Popup>
                 <div>
                   <h3>{aqiData.city.name}</h3>
-                  <p style={{ color: getAQIColor(displayAQI.avg) }}>
+                  <p style={{ color: warnings.color }}>
                     {selectedTimeOption === 'current' ? 'AQI' : selectedIndexOption.toUpperCase()}: {displayAQI.avg}
                   </p>
                   {selectedTimeOption === 'forecast' && (
